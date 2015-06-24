@@ -1,3 +1,7 @@
+1.4-0 (06/24/2015)
+-----
+Support for sprng removed (rsprng not available).
+
 1.3-0 (12/12/2012)
 -----
 PVM interface switched off (rpvm not available).

@@ -13,9 +13,9 @@
 \alias{addtoCluster.MPIcluster}
 %\alias{addtoCluster.PVMcluster}
 \alias{addtoCluster.SOCKcluster}
-\alias{checkSprngNode} 
-\alias{checkSPRNG}
-\alias{clusterCheckSPRNG} 
+%\alias{checkSprngNode} 
+%\alias{checkSPRNG}
+%\alias{clusterCheckSPRNG} 
 \alias{combinecl} 
 \alias{getNodeID}
 \alias{getNodeID.MPInode}
@@ -57,8 +57,8 @@
 initStream(type="RNGstream", name, ...)
 freeStream(type="RNGstream", oldrng)
 resetRNG(cl, nodes, repl, gentype="RNGstream",seed=rep(123456,6))
-checkSprngNode()
-clusterCheckSPRNG(cl, prngkind = "default", ...)
+%checkSprngNode()
+%clusterCheckSPRNG(cl, prngkind = "default", ...)
 initRNGstreamNodeRepli(seed, n)
 
 \method{recvOneDataFT}{MPIcluster}(cl, type='b', time=0)
