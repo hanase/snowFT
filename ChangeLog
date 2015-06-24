@@ -1,0 +1,20 @@
+1.3-0 (12/12/2012)
+-----
+PVM interface switched off (rpvm not available).
+
+1.2-2 (12/12/2012)
+-----
+Added NAMESPACE.
+
+1.2-0 (06/24/2010)
+-----
+Support for SOCK and MPI interface added.
+
+1.1-1 (04/12/2010)
+-----
+Added feature of running processes sequentially with the same RNs as in parallel 
+(set count=0 in performParallel).
+
+Default random seed in performParallel made random.
+
+original version (2006)

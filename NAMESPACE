@@ -1,0 +1,14 @@
+import(
+  snow
+)
+
+export(
+performParallel,
+performSequential,
+clusterApplyFT,
+clusterCallpart,
+clusterEvalQpart,
+printClusterInfo,
+clusterSetupRNG.FT,
+clusterSetupRNGstreamRepli
+)
