@@ -66,7 +66,7 @@ makeClusterFT <- function(spec, type = getClusterOption("type"), names=NULL,
         #PVM = makePVMcluster(spec, ...),
         MPI = makeMPIcluster(spec, ...),
         stop("unknown cluster type"))
-    clusterEvalQ(cl, require(snowFT))
+    clusterEvalQ(cl, library(snowFT))
     if(ft_verbose) {
         cat('\nCluster successfully created.')
         printClusterInfo(cl)
@@ -437,8 +437,8 @@ clusterSetupRNG.FT <- function (cl, type="RNGstream", streamper="replicate", ...
 
 clusterSetupRNGstreamRepli <- function (cl, seed=rep(12345,6), n, ...){
   # creates on all nodes one stream per replication.  
-    if (! require(rlecuyer))
-        stop("the `rlecuyer' package is needed for RNGstream support.")
+    #if (! require(rlecuyer))
+    #    stop("the `rlecuyer' package is needed for RNGstream support.")
     .lec.init()
     .lec.SetPackageSeed(seed)
     nc <- length(cl)
@@ -452,8 +452,8 @@ clusterSetupRNGstreamRepli <- function (cl, seed=rep(12345,6), n, ...){
   }
 
 initRNGstreamNodeRepli <- function (seed, n) {
-    if (! require(rlecuyer))
-        stop("the `rlecuyer' package is needed for RNGstream support.") 
+    #if (! require(rlecuyer))
+    #    stop("the `rlecuyer' package is needed for RNGstream support.") 
     .lec.init()
     .lec.SetPackageSeed(seed)
     names <- as.character(1:n)
@@ -562,7 +562,7 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
     cluster.increased <- FALSE
     if (newp > p) { # increase the degree of parallelism
     	cl<-addtoCluster(cl, newp-p)
-    	clusterEvalQpart(cl,(p+1):newp,require(snowFT))
+    	clusterEvalQpart(cl,(p+1):newp, library(snowFT))
         if(ft_verbose)
             printClusterInfo(cl)
        if (!is.null(initfun))
