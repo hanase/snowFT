@@ -1,3 +1,11 @@
+1.5-0 (05/19/2017)
+-----
+Included timing support.
+
+Fixed missing ranks of nodes.
+
+Some functions are now imported from parallel instead of snow.
+
 1.4-0 (06/24/2015)
 -----
 Support for sprng removed (rsprng not available).
