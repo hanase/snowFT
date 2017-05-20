@@ -34,6 +34,7 @@ removefromCluster  <- function(cl, nodes, ft_verbose=FALSE) {
     else {
       j<-j+1
       newcl[[j]] <- cl[[i]]
+      newcl[[j]]$rank <- j
     }
   }
     for(clattr in names(attributes(cl))){
@@ -85,15 +86,20 @@ clusterEvalQpart <- function(cl, nodes, expr)
 
 
 recvOneResultFT <- function(cl,type='b',time=0) {
-    v <- recvOneDataFT(cl,type,time)
+	if (('snow'%:::%'.snowTimingData')$running()) {
+		start <- proc.time()[3]
+    	v <- recvOneDataFT(cl,type,time)
+    	end <- proc.time()[3]
+    	if (length(v) > 0) ('snow'%:::%'.snowTimingData')$enterRecv(v$node, start, end, v$value$time[3])
+    } else v <- recvOneDataFT(cl,type,time)
     if (length(v) <= 0) return (NULL)
-    return(list(value = v$value$value, node=v$node))
+    return(list(value = v$value$value, node=v$node, tag = v$value$tag))
 }
 
 clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
                              printfun=NULL, printargs=NULL,
                              printrepl=max(length(x)/10,1),
-                             gentype="None", seed=rep(123456,6),
+                             gentype="RNGstream", seed=rep(123456,6),
                              prngkind="default", para=0,
                              mngtfiles=c(".clustersize",".proc",".proc_fail"),
                              ft_verbose=FALSE, ...) {
@@ -585,3 +591,5 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
 #.First.lib <- function(libname, pkgname) {
 #	   require(snow)
 #}
+
+`%:::%` = function(pkg, fun) get(fun, envir = asNamespace(pkg), inherits = FALSE)

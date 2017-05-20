@@ -1,10 +1,14 @@
 import(
-  snow, rlecuyer
+  parallel, rlecuyer
 )
-
+importFrom(
+snow, defaultClusterOptions, addClusterOptions, getClusterOption, newSOCKnode, sendCall, recvResult, recvOneData,
+	clusterSetupRNGstream, makeMPIcluster, makeSOCKcluster, checkForRemoteErrors, stopNode
+)
 export(
 performParallel,
 performSequential,
+makeClusterFT,
 clusterApplyFT,
 clusterCallpart,
 clusterEvalQpart,

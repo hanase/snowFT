@@ -52,7 +52,7 @@ addtoCluster.SOCKcluster <- function(cl, spec, ...,
   }
   j <- 1
   for (i in (n+1):(n+spec)) {
-    newcl[[i]] <- newSOCKnode(names[[j]], options = options)
+    newcl[[i]] <- newSOCKnode(names[[j]], options = options, rank = i)
     newcl[[i]]$replic <- 0
     j <- j+1
   }
@@ -90,6 +90,7 @@ do.administration.SOCKcluster <- function(cl, clall, d, p, it, n, manage, mngtfi
                 p <- newp              
                 d <- recvOneResultFT(clall,'t',time=5) # wait for a result for
                                                        # 5 sec
+                #if(ft_verbose) print(d)
                 if (length(d) > 0) break # some results arrived, if not
                                          # do administration again
             }  # end of while loop ****************************

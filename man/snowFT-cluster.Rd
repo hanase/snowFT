@@ -25,7 +25,7 @@ performParallel(count, x, fun, initfun = NULL, exitfun = NULL,
 
 clusterApplyFT(cl, x, fun, initfun = NULL, exitfun = NULL, 
                printfun = NULL, printargs = NULL, 
-               printrepl = max(length(x)/10,1), gentype = "None", 
+               printrepl = max(length(x)/10,1), gentype = "RNGstream", 
                seed = rep(123456,6), prngkind = "default", para = 0, 
                mngtfiles = c(".clustersize",".proc",".proc_fail"), 
                ft_verbose = FALSE, ...)
