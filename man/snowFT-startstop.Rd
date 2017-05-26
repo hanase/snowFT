@@ -28,9 +28,9 @@ makeClusterFT(spec, type = getClusterOption("type"),
 \examples{
 \dontrun{
 cl <- makeClusterFT(5)
-res <- clusterApplyFT(cl, 1:10, get("+"), 3)
+res <- clusterApplyFT(cl, 1:10, get("+"), y=3)
 stopCluster(res[[2]])
-print(res[[1]])
+print(unlist(res[[1]]))
   }
 }
 \keyword{programming}

@@ -16,7 +16,7 @@ It supports the MPI and the socket communication layers.
 Package: \tab snowFT\cr
 Version: \tab 1.4-0\cr
 License: \tab GPL\cr
-Depends: \tab R (>= 2.11), snow (>= 0.3-3)\cr
+Depends: \tab R (>= 3.0-0), snow (>= 0.3)\cr
 Suggests: \tab Rmpi, rlecuyer\cr
 }
 
@@ -52,7 +52,7 @@ http://www.stat.washington.edu/hana/parallel/snowFT-doc.pdf
 \dontrun{
 # generates 500 times 1000 normally distributed random numbers on 5 nodes
 # (all localhost)
-res <- performParallel(5, rep(1000, 500), fun=rnorm, cltype='SOCK')
+res <- performParallel(5, rep(1000, 500), fun=rnorm, cltype="SOCK")
 print(mean(unlist(res)))
 }
 

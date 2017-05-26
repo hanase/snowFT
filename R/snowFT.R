@@ -99,7 +99,7 @@ recvOneResultFT <- function(cl,type='b',time=0) {
 clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
                              printfun=NULL, printargs=NULL,
                              printrepl=max(length(x)/10,1),
-                             gentype="RNGstream", seed=rep(123456,6),
+                             gentype="None", seed=rep(123456,6),
                              prngkind="default", para=0,
                              mngtfiles=c(".clustersize",".proc",".proc_fail"),
                              ft_verbose=FALSE, ...) {

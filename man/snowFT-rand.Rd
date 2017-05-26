@@ -3,8 +3,8 @@
 \alias{clusterSetupRNG.FT}
 \alias{clusterSetupRNGstreamRepli}
 \usage{
-clusterSetupRNG.FT (cl, type = "RNGstream", streamper="replicate", ...)
-clusterSetupRNGstreamRepli (cl, seed=rep(12345,6), n, ...)
+clusterSetupRNG.FT (cl, type = "RNGstream", streamper="replicate", \dots)
+clusterSetupRNGstreamRepli (cl, seed=rep(12345,6), n, \dots)
 }
 \arguments{
   \item{cl}{Cluster object.}
@@ -12,7 +12,7 @@ clusterSetupRNGstreamRepli (cl, seed=rep(12345,6), n, ...)
     L'Ecuyer's RNG.  }
   \item{streamper}{Mode of the inititalization. Value \code{"node"} initializes one random
     number stream per node.\cr Value \code{"replicate"} initializes one stream per replicate.}
-  \item{...}{Arguments passed to the underlying function (see details
+  \item{\dots}{Arguments passed to the underlying function (see details
 bellow).} 
   \item{seed}{Vector of six integer values used as seed for the RNG.}
   \item{n}{Number of streams to be created. It should correspond to
@@ -43,12 +43,14 @@ bellow).}
 }
 \examples{
 \dontrun{
+# Generate 50 independent (normally distributed) random numbers 
+# on 3 nodes using 10 RNG streams
 cl <- makeClusterFT(3)
-r<-10
-clusterSetupRNG.FT(cl, streamper="replicate",n=r, seed=rep(1,6))
-res<-clusterApplyFT(cl,rep(5,10),rnorm)
+r <- 10
+clusterSetupRNG.FT(cl, streamper="replicate", n=r, seed=rep(1,6))
+res <- clusterApplyFT(cl, rep(5,10), rnorm, gentype="RNGstream")
 stopCluster(res[[2]])
-print(res[[1]])
+print(unlist(res[[1]]))
   }
 }
 \keyword{programming}
