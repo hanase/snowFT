@@ -230,7 +230,6 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
 					if (!is.list(d$value))
 						stop(paste('Error in received results:\n', paste(d, collapse='\n')))
 					val[d$value$index] <- list(d$value$value)
-					val[d$tag] <- list(d$value)
           			node <- GetNodefromReplic(cl,d$value$index)
           			if (node > 0) {
             			if (length(cl) > p) { # decrease the degree of parallelism
