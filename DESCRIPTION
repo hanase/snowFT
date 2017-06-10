@@ -6,8 +6,8 @@ Author: Hana Sevcikova, A. J. Rossini
 Description: Extension of the snow package supporting fault tolerant and reproducible applications, as well as supporting easy-to-use parallel programming - only one function is needed. Dynamic cluster resizing is also available.
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 License: GPL (>= 2)
-Imports: parallel
-Depends: R (>= 3.0-0), snow (>= 0.4), rlecuyer
+Imports: parallel, snow (>= 0.4)
+Depends: R (>= 3.0-0), rlecuyer
 Suggests: Rmpi
 URL: http://www.stat.washington.edu/hana/parallel/snowFT-doc.pdf
 
