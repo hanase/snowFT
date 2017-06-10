@@ -140,9 +140,8 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
   	gennames <- c("RNGstream", "None")
   	gen <- pmatch(gentype,gennames)
   	if (is.na(gen))
-    	stop(paste("'", gentype,
-               "' is not a valid choice. Choose 'RNGstream' or 'None'.",
-               sep = ""))
+    	stop(paste0("'", gentype,
+               "' is not a valid choice. Choose 'RNGstream' or 'None'."))
   	gentype <- gennames[gen]
 
   	lmng <- length(mngtfiles)
@@ -181,7 +180,7 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
     	submit <- function(node, job, n, gentype, seed, prngkind) {
       		args <- c(list(x[[job]]), list(job), list(n), list(gentype),
                 list(seed),list(prngkind),list(...))
-      		sendCall(cl[[node]], wrap, args)
+      		sendCall(cl[[node]], wrap, args, tag = job)
     	}
 
     	val <- vector("list", n)
@@ -231,6 +230,7 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
 					if (!is.list(d$value))
 						stop(paste('Error in received results:\n', paste(d, collapse='\n')))
 					val[d$value$index] <- list(d$value$value)
+					val[d$tag] <- list(d$value)
           			node <- GetNodefromReplic(cl,d$value$index)
           			if (node > 0) {
             			if (length(cl) > p) { # decrease the degree of parallelism
@@ -268,7 +268,8 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
   	return(list(val,cl))
 }
 
-performSequential <- function (x, fun, initfun = NULL, exitfun =NULL,
+performSequential <- function (x, fun, initfun = NULL, initexpr = NULL,
+							exitfun = NULL,
                             printfun=NULL,printargs=NULL,
                             printrepl=max(length(x)/10,1),
                             cltype = getClusterOption("type"),
@@ -291,14 +292,18 @@ performSequential <- function (x, fun, initfun = NULL, exitfun =NULL,
         cat("   calling initfun ...\n")
     initfun()
   }
-
+  if (!is.null(initexpr)) {
+    if (ft_verbose) 
+		cat("   evaluating initial expression ...\n")
+   eval(initexpr)
+  }
   if (RNGnames[rng] != "None") {
     if (ft_verbose) { 
         cat("   initializing RNG ...\n")
 		cat("     gentype:",gentype,"\n")
         cat("     seed:   ",seed,"\n")
     }
-	invisible(initRNGstreamNodeRepli(seed=seed, n=n))
+	initRNGstreamNodeRepli(seed=seed, n=n)
   } else {
     if (ft_verbose) 
         cat("   no RNG initialized\n")
@@ -333,8 +338,9 @@ performSequential <- function (x, fun, initfun = NULL, exitfun =NULL,
   return(results)
 }
 
-performParallel <- function(count, x, fun, initfun = NULL, exitfun =NULL,
-                            printfun=NULL,printargs=NULL,
+performParallel <- function(count, x, fun, initfun = NULL, 
+							initexpr = NULL, export = NULL,
+                            exitfun =NULL, printfun=NULL, printargs=NULL,
                             printrepl=max(length(x)/10,1),
                             cltype = getClusterOption("type"),
                             cluster.args=NULL,
@@ -351,9 +357,10 @@ performParallel <- function(count, x, fun, initfun = NULL, exitfun =NULL,
                sep = ""))
 
   gentype <- RNGnames[rng]
-
   if (count == 0) { # run a sequential version of the code
-     return (performSequential(x, fun, initfun = initfun, exitfun = exitfun,
+     return (performSequential(x, fun, initfun = initfun, 
+     						initexpr = initexpr,
+     						exitfun = exitfun,
                             printfun=printfun, printargs=printargs,
                             printrepl=printrepl,
                             gentype=gentype, seed=seed,
@@ -374,10 +381,19 @@ performParallel <- function(count, x, fun, initfun = NULL, exitfun =NULL,
 
   if (!is.null(initfun)) {
     if (ft_verbose) 
-	cat("   calling initfun ...\n")
+		cat("   calling initfun ...\n")
     clusterCall(cl, initfun)
   }
-
+  if (!is.null(initexpr)) {
+    if (ft_verbose) 
+		cat("   evaluating initial expression ...\n")
+	clusterCall(cl, eval, substitute(initexpr), env=.GlobalEnv)
+  }
+	if(!is.null(export)) {
+		if (ft_verbose) 
+			cat("   exporting ", paste(export, collapse=", "), "...\n")
+		clusterExport(cl, export)
+	}
   if (RNGnames[rng] != "None") {
     if (ft_verbose) 
 	cat("   initializing RNG ...\n")
@@ -458,8 +474,7 @@ clusterSetupRNGstreamRepli <- function (cl, seed=rep(12345,6), n, ...){
   }
 
 initRNGstreamNodeRepli <- function (seed, n) {
-    #if (! require(rlecuyer))
-    #    stop("the `rlecuyer' package is needed for RNGstream support.") 
+    if(length(seed) == 1) seed <- seed:(seed+5) # extend seed to be of length 6
     .lec.init()
     .lec.SetPackageSeed(seed)
     names <- as.character(1:n)
@@ -468,8 +483,7 @@ initRNGstreamNodeRepli <- function (seed, n) {
   }
 
 initStream <- function (type="RNGstream", name, ...) {
-  oldrng <- .lec.CurrentStream(name)
-  return(oldrng)
+  .lec.CurrentStream(name)
 }
 
 freeStream <- function (type="RNGstream", oldrng) {

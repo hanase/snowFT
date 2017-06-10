@@ -13,7 +13,8 @@
   \code{performParallel}. 
 }
 \usage{
-performParallel(count, x, fun, initfun = NULL, exitfun = NULL, 
+performParallel(count, x, fun, initfun = NULL, initexpr = NULL, 
+				export = NULL, exitfun = NULL, 
                 printfun = NULL, printargs = NULL, 
                 printrepl = max(length(x)/10,1), 
                 cltype = getClusterOption("type"),
@@ -47,8 +48,10 @@ printClusterInfo(cl)
 \item{initfun}{Function or character string naming a
 function with no
   arguments that is to
-  be called on each node prior to the computation. 
-  It can be used for example for loading required libraries.}
+  be called on each node prior to the computation. It is passed to workers using \code{\link[parallel]{clusterCall}}. 
+  It can be used for example for loading required libraries or sourcing data files. }
+\item{initexpr}{Expression evaluated on workers at the time of node initialization. It corresponds to what would be passed to \code{\link[parallel]{clusterEvalQ}} before the computation. \code{initfun} and \code{initexpr} can be used for the same purpose, but \code{initexpr} does not need to have a form of a function.}
+\item{export}{Character vector naming objects to be exported to workers.}
 \item{exitfun}{Function or character string naming a function with no
   arguments that is to
   be called on each node after the computation is completed.}
@@ -153,7 +156,7 @@ number). Thus, the final results are reproducible.
 printfun <- function(res, n, args=NULL) {
   res <- unlist(res)
   res <- res[!is.null(res)]
-  print(paste("mean after:", n,"replicates:", mean(res),
+  print(paste("mean after:", n, "replicates:", mean(res),
            "(from",length(res),"RNs)"))
   }
 
@@ -163,6 +166,15 @@ res <- performParallel(p, rep(n,r), fun=rnorm,
 
 # Setting p<-0 will run rnorm sequentially and should give 
 # exactly the same results
+
+Example with worker initialization
+mean <- 20
+sd <- 10
+myfun <- function(r) rdnorm(r, mean = mean, sd = sd)
+
+res <- unlist(performParallel(p, rep(1000, 100), fun = myfun, seed = 123,
+         initexpr = library(extraDistr), export = c("mean", "sd")))
+hist(res)
 }
 }
 
