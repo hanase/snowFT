@@ -587,7 +587,7 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
 									freenodes, initfun=NULL, initexpr=NULL, export=NULL, gentype="None", 
 									seed=1, ft_verbose=FALSE, ...) {
 	newp <- if (manage['cluster.size']) 
-				scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE) 
+				try(scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE))
 			else p
 	if (manage['monitor.procs'])
   		# write the currently processed replications into a file 
@@ -599,11 +599,11 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
         if(ft_verbose) printClusterInfo(cl)
        if (!is.null(initfun))
         	clusterCallpart(cl,(p+1):newp,initfun)
-       #if (!is.null(initexpr))
-    	    #clusterCallpart(cl,(p+1):newp, eval, substitute(initexpr), env=.GlobalEnv)
+       if (!is.null(initexpr))
+    	    clusterCallpart(cl,(p+1):newp, eval, substitute(initexpr), env=.GlobalEnv)
         #   clusterCall(cl, eval, substitute(initexpr), env=.GlobalEnv)
-        #if(!is.null(export)) #clusterExportpart(cl, (p+1):newp, export)
-        #    clusterExport(cl, export)
+        if(!is.null(export)) #clusterExportpart(cl, (p+1):newp, export)
+            clusterExport(cl, export)
        if (gentype != "None")
         	resetRNG(cl,(p+1):newp,n,gentype,seed)
         clall<-combinecl(clall,cl[(p+1):newp])
