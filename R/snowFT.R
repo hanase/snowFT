@@ -80,7 +80,7 @@ stopClusterFT <- function(cl) parallel::stopCluster(cl)
 clusterCallpart  <- function(cl, nodes, fun, ...) {
     for (i in seq(along = nodes))
         sendCall(cl[[nodes[i]]], fun, list(...))
-    lapply(cl[nodes], recvResult)
+    checkForRemoteErrors(lapply(cl[nodes], recvResult))
 }
 
 clusterEvalQpart <- function(cl, nodes, expr)
@@ -399,6 +399,7 @@ performParallel <- function(count, x, fun, initfun = NULL,
     if (ft_verbose) 
 		cat("   evaluating initial expression ...\n")
 	clusterCall(cl, eval, substitute(initexpr), env=.GlobalEnv)
+	initexpr <- deparse(substitute(initexpr))
   }
 	if(!is.null(export)) {
 		if (ft_verbose) 
@@ -599,11 +600,9 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
         if(ft_verbose) printClusterInfo(cl)
        if (!is.null(initfun))
         	clusterCallpart(cl,(p+1):newp,initfun)
-       if (!is.null(initexpr))
-    	    clusterCallpart(cl,(p+1):newp, eval, substitute(initexpr), env=.GlobalEnv)
-        #   clusterCall(cl, eval, substitute(initexpr), env=.GlobalEnv)
-        if(!is.null(export)) #clusterExportpart(cl, (p+1):newp, export)
-            clusterExport(cl, export)
+       if (!is.null(initexpr)) 
+    	    clusterCallpart(cl,(p+1):newp, eval, parse(text=initexpr), env=.GlobalEnv)
+        if(!is.null(export)) clusterExportpart(cl, (p+1):newp, export)
        if (gentype != "None")
         	resetRNG(cl,(p+1):newp,n,gentype,seed)
         clall<-combinecl(clall,cl[(p+1):newp])
