@@ -587,7 +587,7 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
 									freenodes, initfun=NULL, initexpr=NULL, export=NULL, gentype="None", 
 									seed=1, ft_verbose=FALSE, ...) {
 	newp <- if (manage['cluster.size']) 
-				try(scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE))
+				try(as.integer(scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE)))
 			else p
 	if (manage['monitor.procs'])
   		# write the currently processed replications into a file 
