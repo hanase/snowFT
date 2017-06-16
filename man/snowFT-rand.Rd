@@ -49,7 +49,7 @@ cl <- makeClusterFT(3)
 r <- 10
 clusterSetupRNG.FT(cl, streamper="replicate", n=r, seed=rep(1,6))
 res <- clusterApplyFT(cl, rep(5,10), rnorm, gentype="RNGstream")
-stopCluster(res[[2]])
+stopClusterFT(res[[2]])
 print(unlist(res[[1]]))
   }
 }

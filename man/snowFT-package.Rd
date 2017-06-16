@@ -16,8 +16,6 @@ It supports the MPI and the socket communication layers.
 Package: \tab snowFT\cr
 Version: \tab 1.6-0\cr
 License: \tab GPL\cr
-Depends: \tab R (>= 3.0-0), snow (>= 0.3), rlecuyer\cr
-Suggests: \tab Rmpi\cr
 }
 
 The main function of this package, \code{\link{performParallel}}, handles all tasks that are necessary for evaluating a user-defined function in parallel. These include creating a cluster, initializing nodes, handling a random number generator, processing the given function on the cluster and cleaning up. In the very basic settings (i.e. when using with the socket layer), no additional software is necessary. The package can be used on a single multi-processor/core machine, homogeneous cluster, or a heterogeneous group of computers.
@@ -54,6 +52,13 @@ http://www.stat.washington.edu/hana/parallel/snowFT-doc.pdf
 # (all localhost)
 res <- performParallel(5, rep(1000, 500), fun=rnorm, cltype="SOCK")
 print(mean(unlist(res)))
+
+# View cluster usage
+# number of physical nodes
+P <- parallel::detectCores(logical = FALSE)
+t <- snow::snow.time(performParallel(P, rep(1e6, 50), 
+        fun = function(x) median(rnorm(x)), cltype="SOCK"))
+plot(t)
 }
 
 }

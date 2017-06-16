@@ -14,7 +14,7 @@
 }
 \usage{
 performParallel(count, x, fun, initfun = NULL, initexpr = NULL, 
-				export = NULL, exitfun = NULL, 
+                export = NULL, exitfun = NULL, 
                 printfun = NULL, printargs = NULL, 
                 printrepl = max(length(x)/10,1), 
                 cltype = getClusterOption("type"),
@@ -73,7 +73,7 @@ the non-finished
 \code{\link{clusterSetupRNG.FT}}. If
   \code{gentype="None"}, no RNG action is taken.}
 \item{seed, prngkind, para}{Seed, kind and parameters for the RNG (see
-  \code{\link{clusterSetupRNG.FT}}).}
+  \code{\link{clusterSetupRNG.FT}}). Seed can be an integer or a vector of six integers.}
 \item{mngtfiles}{A character vector of length 3 containing names of
   management files: \code{mngtfiles[1]} for managing the
   cluster size, \code{mngtfiles[2]} for monitoring replicates
@@ -161,13 +161,16 @@ printfun <- function(res, n, args=NULL) {
   }
 
 r<-1000; n<-100; p<-5
-res <- performParallel(p, rep(n,r), fun=rnorm,
-  gentype="RNGstream", seed=rep(1,6), printfun=printfun)
+res <- performParallel(p, rep(n,r), fun = rnorm, seed = 1, 
+                printfun = printfun)
 
-# Setting p<-0 will run rnorm sequentially and should give 
-# exactly the same results
+# Setting p<-0 will run the rnorm call above sequentially and  
+# should give exactly the same results
+res.seq <- performParallel(0, rep(n,r), fun = rnorm, seed = 1, 
+                printfun = printfun)
+identical(res, res.seq)
 
-Example with worker initialization
+# Example with worker initialization
 mean <- 20
 sd <- 10
 myfun <- function(r) rdnorm(r, mean = mean, sd = sd)
@@ -176,6 +179,7 @@ res <- unlist(performParallel(p, rep(1000, 100), fun = myfun, seed = 123,
          initexpr = library(extraDistr), export = c("mean", "sd")))
 hist(res)
 }
+# See example in ?snowFT for plotting time of cluster usage.
 }
 
 \keyword{programming}

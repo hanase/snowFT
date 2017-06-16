@@ -75,6 +75,8 @@ makeClusterFT <- function(spec, type = getClusterOption("type"), names=NULL,
     return(cl)
 }
 
+stopClusterFT <- function(cl) parallel::stopCluster(cl)
+
 clusterCallpart  <- function(cl, nodes, fun, ...) {
     for (i in seq(along = nodes))
         sendCall(cl[[nodes[i]]], fun, list(...))
@@ -84,6 +86,14 @@ clusterCallpart  <- function(cl, nodes, fun, ...) {
 clusterEvalQpart <- function(cl, nodes, expr)
     clusterCallpart(cl, nodes, eval, substitute(expr), env=.GlobalEnv)
 
+clusterExportpart <- local({ # taken from parallel; modified so that it runs onlu for given nodes 
+    gets <- function(n, v) { assign(n, v, envir = .GlobalEnv); NULL }
+    function(cl = NULL, nodes, varlist, envir = .GlobalEnv) {
+        for (name in varlist) {
+            clusterCallpart(cl, nodes, gets, name, get(name, envir = envir))
+        }
+    }
+})
 
 recvOneResultFT <- function(cl,type='b',time=0) {
 	if (('snow'%:::%'.snowTimingData')$running()) {
@@ -96,7 +106,9 @@ recvOneResultFT <- function(cl,type='b',time=0) {
     return(list(value = v$value$value, node=v$node, tag = v$value$tag))
 }
 
-clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
+clusterApplyFT <- function(cl, x, fun, initfun = NULL, 
+                             initexpr = NULL, export = NULL,
+                             exitfun=NULL,
                              printfun=NULL, printargs=NULL,
                              printrepl=max(length(x)/10,1),
                              gentype="None", seed=rep(123456,6),
@@ -218,8 +230,8 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL, exitfun=NULL,
                                         # or wait for remaining results
           			d <- recvOneResultFT(clall,'n') # look if there is any result
           			admin <- do.administration(cl, clall, d, p, it, n, manage, mngtfiles, 
-									x, frep, freenodes, initfun, 
-									gentype, seed, ft_verbose)
+									x, frep, freenodes, initfun=initfun, initexpr=initexpr, export=export,
+									gentype=gentype, seed=seed, ft_verbose=ft_verbose)
 					cl <- admin$cl
 					clall <- admin$clall
 					d <- admin$d
@@ -405,7 +417,8 @@ performParallel <- function(count, x, fun, initfun = NULL,
   if (ft_verbose) 
      cat("   calling clusterApplyFT ...\n")
  
-  res <- clusterApplyFT (cl, x, fun, initfun=initfun, exitfun=exitfun,
+  res <- clusterApplyFT (cl, x, fun, initfun=initfun, initexpr=initexpr,
+                           export=export, exitfun=exitfun,
                            printfun=printfun, printargs=printargs,
                            printrepl=printrepl, gentype=gentype,
                            seed=seed, prngkind=prngkind,
@@ -421,7 +434,7 @@ performParallel <- function(count, x, fun, initfun = NULL,
 	cat("   calling exitfun ...\n")
      clusterCall(cl, exitfun)
   }
-  stopCluster(cl)
+  stopClusterFT(cl)
   if (ft_verbose) 
      cat("   cluster stopped.\n")
   return(checkForRemoteErrors(val))
@@ -571,7 +584,8 @@ writetomngtfile <- function(cl, file) {
 }
 
 manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfiles, 
-									freenodes, initfun, gentype, seed, ft_verbose=FALSE) {
+									freenodes, initfun=NULL, initexpr=NULL, export=NULL, gentype="None", 
+									seed=1, ft_verbose=FALSE, ...) {
 	newp <- if (manage['cluster.size']) 
 				scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE) 
 			else p
@@ -582,10 +596,14 @@ manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfi
     if (newp > p) { # increase the degree of parallelism
     	cl<-addtoCluster(cl, newp-p)
     	clusterEvalQpart(cl,(p+1):newp, library(snowFT))
-        if(ft_verbose)
-            printClusterInfo(cl)
+        if(ft_verbose) printClusterInfo(cl)
        if (!is.null(initfun))
         	clusterCallpart(cl,(p+1):newp,initfun)
+       #if (!is.null(initexpr))
+    	    #clusterCallpart(cl,(p+1):newp, eval, substitute(initexpr), env=.GlobalEnv)
+        #   clusterCall(cl, eval, substitute(initexpr), env=.GlobalEnv)
+        #if(!is.null(export)) #clusterExportpart(cl, (p+1):newp, export)
+        #    clusterExport(cl, export)
        if (gentype != "None")
         	resetRNG(cl,(p+1):newp,n,gentype,seed)
         clall<-combinecl(clall,cl[(p+1):newp])

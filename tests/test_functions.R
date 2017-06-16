@@ -90,12 +90,12 @@ check.reproducibility.for.seq.and.par <- function() {
 check.init.workers <- function() {
 	cat('\nCheck initialization of workers ...')
 	myfun <- function(r) rnorm(r, mean = mean, sd = sd)
-	res <- performParallel(2, rep(10, 5), fun = myfun, seed = 123,
+	res <- performParallel(2, rep(10, 5), fun = myfun, seed = 123, cltype='SOCK',
                     initexpr = {mean <- 20; sd <- 10})
     stopifnot(length(unlist(res)) == 50)
 	mean <- 20
 	sd <- 10
-	res <- performParallel(2, rep(10, 5), fun = myfun, seed = 123,
+	res <- performParallel(2, rep(10, 5), fun = myfun, seed = 123, cltype='SOCK',
                     export = c("mean", "sd"))
     stopifnot(length(unlist(res)) == 50)
 	cat(' OK.\n')

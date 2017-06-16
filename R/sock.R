@@ -70,15 +70,14 @@ getNodeID.SOCKnode <- function(node) {
 }
 
 do.administration.SOCKcluster <- function(cl, clall, d, p, it, n, manage, mngtfiles, 
-									x, frep, freenodes, initfun, 
-									gentype, seed, ft_verbose, ...) {
+									x, frep, freenodes, ...) {
 	free.nodes <- FALSE
         if (length(d) <= 0) { # no results arrived yet
             while (TRUE) {
                 # do the administration in the waiting time
                 # ***************************************
 	        updated.values <- manage.replications.and.cluster.size(cl, clall, p, n, manage, mngtfiles, 
-									freenodes, initfun, gentype, seed, ft_verbose=ft_verbose)
+									freenodes, ...)
                 newp <- updated.values$newp
                 if (updated.values$cluster.increased) {
                     p <- updated.values$p
