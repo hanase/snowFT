@@ -1,5 +1,5 @@
 \name{snowFT-cluster}
-\title{Cluster-Level Functions with Fault Tolerance Features}
+\title{Cluster-Level Functions}
 \alias{performParallel}
 \alias{clusterApplyFT}
 \alias{clusterCallpart}
@@ -8,8 +8,7 @@
 
 \description{
   Functions that extend the collection of cluster-level functions of the
-  \pkg{snow} package while providing fault tolerance, reproducibility and additional
-  management features. The heart of the package is the function
+  \pkg{parallel}/\pkg{snow} package while providing additional features, including reproducibility and dynamic cluster resizing. The heart of the package is the function
   \code{performParallel}. 
 }
 \usage{
@@ -82,7 +81,7 @@ the non-finished
   replicates. If any of these files equals an empty string, the
   corresponding management actions (i.e. dynamic cluster resizing, outputting processed replicates, and cluster repair in case of failures) are not performed. If the files
   already exist, their content
-  is overwritten. Note that the cluster repair action is only available for PVM. Furthermore, the dynamic cluster resizing is not available for MPI.}
+  is overwritten. Note that the cluster repair action was only available for PVM which is switched off. Furthermore, the dynamic cluster resizing is not available for MPI.}
   \item{ft_verbose}{If TRUE, debugging messages are sent to standard output.}
   \item{nodes}{Indices of cluster nodes.}
   \item{expr}{Expression to evaluate.}
@@ -91,19 +90,15 @@ the non-finished
 }
 
 \details{
-  \code{clusterApplyFT} is a fault tolerant version of
-  \code{clusterApplyLB} of the snow package with additional features, such as results
+  \code{clusterApplyFT} is a version of
+  \code{clusterApplyLB} of the \pkg{parallel}/\pkg{snow} package with additional features, such as results
   reproducibility, computation transparency and dynamic cluster
-resizing. The master process searches for failed nodes in its
-  waiting time. If failures are detected, the cluster is
-  repaired. All failed computations are restarted (in three additional
-  runs) after the replication
-  loop is finished, and hence the user should not notice any
-  interruptions.
+resizing. The master process does the management in its
+  waiting time. 
 
  The file \code{mngtfiles[1]} (which defaults to \sQuote{.clustersize}) is initially written by the master
   prior to the computation and it contains a single integer value corresponding
-  to the number of cluster nodes. Then the value can be arbitrarily changed by
+  to the number of cluster nodes. The value can be arbitrarily changed by
   the user (but should remain in the same format). The master reads the
   file  in its waiting time. If the value in this file is larger than
   the current
@@ -111,8 +106,8 @@ resizing. The master process searches for failed nodes in its
   them. If on the other hand the value is smaller, nodes are
   successively discarded after they finish their current
   computation.
-  The arguments \code{initfun, exitfun} in
-\code{clusterApplyFT} are only used, if there are
+  The arguments \code{initfun, initexpr, export} and \code{exitfun} in the 
+\code{clusterApplyFT} function are only used, if there are
   changes in the cluster, i.e. if new nodes are added or if nodes are
   removed from cluster.
 
@@ -120,19 +115,19 @@ resizing. The master process searches for failed nodes in its
 the scheme 'one stream per replicate', in contrary to 'one stream per
 node' used by \code{clusterApplyLB}. Therefore with each replicate, the
 RNG is reset to the corresponding stream (identified by the replicate
-number). Thus, the final results are reproducible.
+number). Thus, the final results are reproducible regardless of how many nodes were used. 
 
   \code{performParallel} is a wrapper function for
   \code{clusterApplyFT} and we recommend using this function rather than
   using \code{clusterApplyFT} directly. It creates a cluster of
-\code{count} nodes,
+\code{count} nodes;
   on all nodes it
-  calls \code{initfun} and initializes the RNG. Then it calls
+  calls \code{initfun}, evaluates \code{initexpr} and \code{export}, and initializes the RNG. Then it calls
   \code{clusterApplyFT}. After the computation is finished, it calls
   \code{exitfun} on all nodes and stops the cluster. If \code{count=0}, function \code{fun} is invoked sequentially with the same settings (including random numbers) as it would in parallel. This mode can be used for debugging purposes.
 
   \code{clusterCallpart} calls a function \code{fun} with identical arguments 
-  \code{...} on nodes
+  \code{\dots} on nodes
   specified by indices \code{nodes} in the cluster \code{cl} and returns a list
   of the results.
   
@@ -154,18 +149,18 @@ number). Thus, the final results are reproducible.
 # generates n normally distributed random numbers in r replicates
 # on p nodes and prints their mean after each r/10 replicate.
 
-printfun <- function(res, n, args=NULL) {
+printfun <- function(res, n, args = NULL) {
   res <- unlist(res)
   res <- res[!is.null(res)]
   print(paste("mean after:", n, "replicates:", mean(res),
-           "(from",length(res),"RNs)"))
+           "(from", length(res), "RNs)"))
   }
 
-r<-1000; n<-100; p<-5
+r <- 1000; n <- 100; p <- 5
 res <- performParallel(p, rep(n,r), fun = rnorm, seed = 1, 
                 printfun = printfun)
 
-# Setting p<-0 will run the rnorm call above sequentially and  
+# Setting p <- 0 will run the rnorm call above sequentially and  
 # should give exactly the same results
 res.seq <- performParallel(0, rep(n,r), fun = rnorm, seed = 1, 
                 printfun = printfun)
@@ -179,8 +174,10 @@ myfun <- function(r) rdnorm(r, mean = mean, sd = sd)
 res <- unlist(performParallel(p, rep(1000, 100), fun = myfun, seed = 123,
          initexpr = library(extraDistr), export = c("mean", "sd")))
 hist(res)
+
+# See example in ?snowFT for plotting cluster usage.
 }
-# See example in ?snowFT for plotting time of cluster usage.
+
 }
 
 \keyword{programming}

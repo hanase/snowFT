@@ -33,7 +33,7 @@ stopClusterFT(cl)
 \examples{
 \dontrun{
 cl <- makeClusterFT(5, ft_verbose = TRUE)
-res <- clusterApplyFT(cl, 1:10, get("+"), y=3)
+res <- clusterApplyFT(cl, 1:10, get("+"), y = 3)
 stopClusterFT(res[[2]])
 print(unlist(res[[1]]))
   }

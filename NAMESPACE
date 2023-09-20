@@ -9,6 +9,7 @@ export(
 performParallel,
 performSequential,
 makeClusterFT,
+stopClusterFT,
 clusterApplyFT,
 clusterCallpart,
 clusterEvalQpart,

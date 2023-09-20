@@ -86,8 +86,9 @@ clusterCallpart  <- function(cl, nodes, fun, ...) {
 clusterEvalQpart <- function(cl, nodes, expr)
     clusterCallpart(cl, nodes, eval, substitute(expr), env=.GlobalEnv)
 
-clusterExportpart <- local({ # taken from parallel; modified so that it runs onlu for given nodes 
-    gets <- function(n, v) { assign(n, v, envir = .GlobalEnv); NULL }
+clusterExportpart <- local({ # taken from snow; modified so that it runs onlu for given nodes 
+    env <- as.environment(1) ## .GlobalEnv
+    gets <- function(n, v) { assign(n, v, envir = env); NULL }
     function(cl = NULL, nodes, varlist, envir = .GlobalEnv) {
         for (name in varlist) {
             clusterCallpart(cl, nodes, gets, name, get(name, envir = envir))
@@ -135,7 +136,6 @@ clusterApplyFT <- function(cl, x, fun, initfun = NULL,
 #  - efficient administration - all the management work is done only
 #                 when there is no message arrived and thus nothing
 #                 else to do.
-
 	if (all(is.na(pmatch(attr(cl,"class"), c(#"PVMcluster", 
 							"MPIcluster", "SOCKcluster"))))) {
     	cat("\nInvalid communication layer.\n")
@@ -359,7 +359,6 @@ performParallel <- function(count, x, fun, initfun = NULL,
                             prngkind="default", para=0, 
 			    mngtfiles=c(".clustersize",".proc",".proc_fail"),
                             ft_verbose=FALSE, ...) {
-
   RNGnames <- c("RNGstream",  "None")
   rng <- pmatch (gentype, RNGnames)
   if (is.na(rng))
@@ -399,7 +398,7 @@ performParallel <- function(count, x, fun, initfun = NULL,
     if (ft_verbose) 
 		cat("   evaluating initial expression ...\n")
 	clusterCall(cl, eval, substitute(initexpr), env=.GlobalEnv)
-	initexpr <- deparse(substitute(initexpr))
+	initexpr <- deparse(substitute(initexpr)) # convert to character to pass it around
   }
 	if(!is.null(export)) {
 		if (ft_verbose) 
@@ -587,21 +586,23 @@ writetomngtfile <- function(cl, file) {
 manage.replications.and.cluster.size <- function(cl, clall, p, n, manage, mngtfiles, 
 									freenodes, initfun=NULL, initexpr=NULL, export=NULL, gentype="None", 
 									seed=1, ft_verbose=FALSE, ...) {
-	newp <- if (manage['cluster.size']) 
-				try(as.integer(scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE)))
-			else p
+    newp <- p
+    if (manage['cluster.size']) {
+        p.fromfile <- try(as.integer(scan(file=mngtfiles[1],what=integer(),nlines=1, quiet=TRUE)))
+        if(length(p.fromfile) == 1) newp <- p.fromfile
+    }
 	if (manage['monitor.procs'])
   		# write the currently processed replications into a file 
         writetomngtfile(cl,mngtfiles[2])
     cluster.increased <- FALSE
-    if (newp > p) { # increase the degree of parallelism
+    if (newp > p) { # increase the cluster size
     	cl<-addtoCluster(cl, newp-p)
     	clusterEvalQpart(cl,(p+1):newp, library(snowFT))
         if(ft_verbose) printClusterInfo(cl)
        if (!is.null(initfun))
         	clusterCallpart(cl,(p+1):newp,initfun)
        if (!is.null(initexpr)) 
-    	    clusterCallpart(cl,(p+1):newp, eval, parse(text=initexpr), env=.GlobalEnv)
+    	   clusterCallpart(cl,(p+1):newp, eval, parse(text=initexpr), env=.GlobalEnv)
         if(!is.null(export)) clusterExportpart(cl, (p+1):newp, export)
        if (gentype != "None")
         	resetRNG(cl,(p+1):newp,n,gentype,seed)
