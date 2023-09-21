@@ -5,7 +5,13 @@
 recvOneDataFT.MPIcluster <- function(cl, type='b', time=0) {
   # non-blocking receive (type='n') and timeout receive (type='t')
   # not implemented.
-  return(recvOneData(cl))
+    return(snow::recvOneData(cl))
+    # 2023/09/20
+    # In the newest R-devel version, the "parallel" function recvOneData is 
+    # not internal anymore - it is now exported via the NAMESPACE.
+    # However it is not the case in the current (stable) version of R. 
+    # Thus, in the future the above call should be changed to 
+    # return(parallel::recvOneData(cl))
 }
 
 addtoCluster.MPIcluster <- function(cl, spec, ...,

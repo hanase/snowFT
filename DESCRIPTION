@@ -1,7 +1,7 @@
 Package: snowFT
 Title: Fault Tolerant Simple Network of Workstations
-Version: 1.6-0
-Date: 2017-06-17
+Version: 1.6-1
+Date: 2023-09-20
 Author: Hana Sevcikova, A. J. Rossini
 Description: Extension of the snow package supporting fault tolerant and reproducible applications, as well as supporting easy-to-use parallel programming - only one function is needed. Dynamic cluster size is also available.
 Maintainer: Hana Sevcikova <hanas@uw.edu>
